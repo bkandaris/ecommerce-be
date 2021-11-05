@@ -7,10 +7,7 @@ router.post('/register', async (req, res) => {
   const newUser = new User({
     username: req.body.username,
     email: req.body.email,
-    password: CryptoJS.AES.encrypt(
-      req.body.password,
-      process.env.PASS_SEC
-    ).toString(),
+    password: req.body.password,
   });
   try {
     const savedUser = await newUser.save();
@@ -24,15 +21,21 @@ router.post('/register', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   try {
-    const user = await user.findOne({ username: req.body.username });
-    !user && res.status(401).json("user not found")
-    const hashedPassword = CryptoJS.AES.decrypt(
-      user.password,
-      process.env.PASS_SEC
-    );
-    const password = hashedPassword.toString(CryptoJS.enc.Utf8);
-    !password !== req.body.password && res.status(401).json("wrong password")
-  } catch {
+    const user = await User.findOne({
+      username: req.body.username,
+    });
+    // !user && res.status(401).json('no user found');
+    console.log(user);
+    if (!user) {
+      return res.status(401).json('no user was found');
+    }
+    const password = req.body.password;
+    if (password !== user.password) {
+      res.status(401).json('Password does not match');
+    }
+
+    res.status(201).json(user);
+  } catch (err) {
     res.status(500).json(err);
   }
 });
