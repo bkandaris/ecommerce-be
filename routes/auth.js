@@ -1,13 +1,13 @@
 const router = require('express').Router();
 const User = require('../models/User');
-const CryptoJS = require('crypto-js');
+const bcrypt = require('bcrypt');
 
 // Register
 router.post('/register', async (req, res) => {
   const newUser = new User({
     username: req.body.username,
     email: req.body.email,
-    password: req.body.password,
+    password: bcrypt.hashSync(req.body.password, 8),
   });
   try {
     const savedUser = await newUser.save();
@@ -24,13 +24,12 @@ router.post('/login', async (req, res) => {
     const user = await User.findOne({
       username: req.body.username,
     });
-    // !user && res.status(401).json('no user found');
-    console.log(user);
     if (!user) {
       return res.status(401).json('no user was found');
     }
-    const password = req.body.password;
-    if (password !== user.password) {
+    let hashedPassword = bcrypt.compareSync(req.body.password, user.password);
+
+    if (!hashedPassword) {
       res.status(401).json('Password does not match');
     }
 
