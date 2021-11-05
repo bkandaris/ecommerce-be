@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 // Register
 router.post('/register', async (req, res) => {
@@ -32,8 +33,15 @@ router.post('/login', async (req, res) => {
     if (!hashedPassword) {
       res.status(401).json('Password does not match');
     }
-
-    res.status(201).json(user);
+    const accessToken = jwt.sign(
+      {
+        id: user.id,
+        isAdmin: user.isAdmin,
+      },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: '5d' }
+    );
+    res.status(201).json({ user, accessToken });
   } catch (err) {
     res.status(500).json(err);
   }
