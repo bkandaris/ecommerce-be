@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { verifyTokenAndAdmin } = require('../routes/verifyToken');
 
 const ProductSchema = new mongoose.Schema({
   title: { type: String, required: true, unique: true },
@@ -9,9 +10,11 @@ const ProductSchema = new mongoose.Schema({
   condition: { type: String },
   price: { type: Number, required: true },
 
-}
+},
 { timestamps: true}
 );
+
+
 
 
 module.exports = mongoose.model("Product", ProductSchema);
